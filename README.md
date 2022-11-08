@@ -32,6 +32,12 @@
 $ npm install
 ```
 
+### dependencies
+```bash
+$ npm install --save @nestjs/typeorm typeorm mysql2 
+$ npm install --save @nestjs/class-validator
+```
+
 ## Running the app
 
 ```bash
