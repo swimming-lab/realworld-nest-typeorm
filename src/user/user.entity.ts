@@ -4,8 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { IsEmail } from '@nestjs/class-validator';
+import * as argon2 from 'argon2';
 
 @Entity('users')
 export class User {
@@ -33,4 +35,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // @BeforeInsert()
+  // async hashPassword() {
+  //   this.password = await argon2.hash(this.password);
+  // }
 }
