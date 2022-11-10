@@ -10,6 +10,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('users')
 export class UserController {
@@ -18,6 +19,11 @@ export class UserController {
   @Post()
   async create(@Body('user') createUserDto: CreateUserDto) {
     return await this.userService.create(createUserDto);
+  }
+
+  @Post('/login')
+  async login(@Body('user') loginUserDto: LoginUserDto) {
+    return await this.userService.login(loginUserDto);
   }
 
   @Get()

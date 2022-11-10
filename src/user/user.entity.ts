@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { IsEmail } from '@nestjs/class-validator';
 import * as argon2 from 'argon2';
+import * as jwt from 'jsonwebtoken';
 
 @Entity('users')
 export class User {
@@ -36,8 +37,36 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // @BeforeInsert()
-  // async hashPassword() {
-  //   this.password = await argon2.hash(this.password);
-  // }
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await argon2.hash(this.password);
+  }
+
+  async validatePassword(password: string) {
+    return await argon2.verify(this.password, password);
+  }
+
+  async generateJWT() {
+    const today = new Date();
+    const exp = new Date(today);
+    exp.setDate(today.getDate() + 60);
+    return jwt.sign(
+      {
+        id: this.id,
+        username: this.username,
+        exp: parseInt(String(exp.getTime() / 1000)),
+      },
+      'secret',
+    );
+  }
+
+  async toAuthJSON() {
+    return {
+      username: this.username,
+      email: this.email,
+      token: await this.generateJWT(),
+      bio: this.bio,
+      image: this.image,
+    };
+  }
 }

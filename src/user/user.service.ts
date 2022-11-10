@@ -4,12 +4,13 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -18,7 +19,20 @@ export class UserService {
     user.username = createUserDto.username;
     user.password = createUserDto.password;
 
-    return await this.usersRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    return { user: await savedUser.toAuthJSON() };
+  }
+
+  async login({ email, password }: LoginUserDto) {
+    const user = await this.userRepository.findOneBy({ email: email });
+
+    if (!user) {
+      return null;
+    }
+
+    if (user.validatePassword(password)) {
+      return { user: await user.toAuthJSON() };
+    }
   }
 
   findAll() {
