@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -27,7 +27,7 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ email: email });
 
     if (!user) {
-      return null;
+      throw new HttpException('User not found.', HttpStatus.UNAUTHORIZED);
     }
 
     if (user.validatePassword(password)) {
@@ -39,15 +39,42 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    const user = await this.userRepository.findOneBy({ id: id });
+    if (!user) {
+      throw new HttpException('User not found.', HttpStatus.UNAUTHORIZED);
+    }
+
+    return { user: await user.toAuthJSON() };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOneBy({ id: id });
+    if (!user) {
+      throw new HttpException('User not found.', HttpStatus.UNAUTHORIZED);
+    }
+
+    if (typeof updateUserDto.username !== 'undefined') {
+      user.username = updateUserDto.username;
+    }
+    if (typeof updateUserDto.email !== 'undefined') {
+      user.email = updateUserDto.email;
+    }
+    if (typeof updateUserDto.bio !== 'undefined') {
+      user.bio = updateUserDto.bio;
+    }
+    if (typeof updateUserDto.image !== 'undefined') {
+      user.image = updateUserDto.image;
+    }
+    if (typeof updateUserDto.password !== 'undefined') {
+      await user.updatePassword(updateUserDto.password);
+    }
+
+    const savedUser = await this.userRepository.save(user);
+    return { user: await savedUser.toAuthJSON() };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.userRepository.delete({ id: id });
   }
 }

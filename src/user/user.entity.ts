@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { IsEmail } from '@nestjs/class-validator';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
+import { SECRET } from '../config';
 
 @Entity('users')
 export class User {
@@ -42,6 +44,10 @@ export class User {
     this.password = await argon2.hash(this.password);
   }
 
+  async updatePassword(password) {
+    this.password = await argon2.hash(password);
+  }
+
   async validatePassword(password: string) {
     return await argon2.verify(this.password, password);
   }
@@ -56,7 +62,7 @@ export class User {
         username: this.username,
         exp: parseInt(String(exp.getTime() / 1000)),
       },
-      'secret',
+      SECRET,
     );
   }
 
