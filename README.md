@@ -32,6 +32,12 @@
 $ npm install
 ```
 
+## Nestjs generate resource
+```bash
+nest g resource user
+nest g resource profile
+```
+
 ### dependencies
 ```bash
 $ npm install --save @nestjs/typeorm typeorm mysql2 
