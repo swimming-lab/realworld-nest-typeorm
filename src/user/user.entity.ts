@@ -5,12 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
-  BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 import { IsEmail } from '@nestjs/class-validator';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from '../config';
+import { Follow } from '../profile/follow.entity';
 
 @Entity('users')
 export class User {
@@ -39,12 +40,15 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @OneToMany(() => Follow, (follow) => follow.user)
+  follows: Follow[]
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await argon2.hash(this.password);
   }
 
-  async updatePassword(password) {
+  async updatePassword(password: string) {
     this.password = await argon2.hash(password);
   }
 
@@ -56,8 +60,7 @@ export class User {
     const today = new Date();
     const exp = new Date(today);
     exp.setDate(today.getDate() + 60);
-    return jwt.sign(
-      {
+    return jwt.sign({
         id: this.id,
         username: this.username,
         exp: parseInt(String(exp.getTime() / 1000)),
@@ -74,5 +77,20 @@ export class User {
       bio: this.bio,
       image: this.image,
     };
+  }
+
+	async toProfileJSONFor(user: User) {
+		return {
+			username: this.username,
+			bio: this.bio,
+			image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+			following: user ? await user.hasFollow(this.id) : false
+		};
+	};
+
+  async hasFollow(followId: number) {
+    if (this.follows.length > 0) {
+    }
+    return false;
   }
 }

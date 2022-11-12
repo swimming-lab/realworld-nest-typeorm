@@ -35,10 +35,6 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
-
   async findOne(id: number) {
     const user = await this.userRepository.findOneBy({ id: id });
     if (!user) {
