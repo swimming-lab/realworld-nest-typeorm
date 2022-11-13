@@ -35,12 +35,7 @@ export class UserService {
     }
   }
 
-  async findOne(id: number) {
-    const user = await this.userRepository.findOneBy({ id: id });
-    if (!user) {
-      throw new HttpException('User not found.', HttpStatus.UNAUTHORIZED);
-    }
-
+  async findOne(user: User) {
     return { user: await user.toAuthJSON() };
   }
 
@@ -70,7 +65,7 @@ export class UserService {
     return { user: await savedUser.toAuthJSON() };
   }
 
-  async remove(id: number) {
-    return await this.userRepository.delete({ id: id });
+  async remove(user: User) {
+    return await this.userRepository.delete(user.id);
   }
 }

@@ -21,16 +21,16 @@ export class UserController {
 
   @Get('/user')
   async get(@Req() req: Request) {
-    return await this.userService.findOne(req['auth'].id);
+    return await this.userService.findOne(req['auth']);
   }
 
   @Put('/user')
   update(@Req() req: Request, @Body('user') updateUserDto: UpdateUserDto) {
-    return this.userService.update(req['auth'].id, updateUserDto);
+    return this.userService.update(req['auth'], updateUserDto);
   }
 
   @Delete('/user')
   remove(@Req() req: Request) {
-    return this.userService.remove(req['auth'].id);
+    return this.userService.remove(req['auth']);
   }
 }

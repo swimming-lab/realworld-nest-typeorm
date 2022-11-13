@@ -42,12 +42,7 @@ export class ProfileService {
     return { profile: await profile.toProfileJSONFor(isFollow) };
   }
 
-  async follow(authId: number, username: string) {
-    const user = await this.userRepository.findOneBy({ id: authId });
-    if (!user) {
-      throw new HttpException('Not authorized.', HttpStatus.UNAUTHORIZED);
-    }
-
+  async follow(auth: User, username: string) {
     const profile = await this.userRepository.findOneBy({ username: username });
     if (!profile) {
       throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
@@ -56,7 +51,7 @@ export class ProfileService {
     const follow = await this.followRepository.findOneBy({
       followId: profile.id,
       user: {
-        id: user.id
+        id: auth.id
       }
     });
 
@@ -64,7 +59,7 @@ export class ProfileService {
     if (!follow) {
       const follow = new Follow();
       follow.followId = profile.id;
-      follow.user = user;
+      follow.user = auth;
       await this.followRepository.save(follow);
       isFollow = true;
     }
@@ -72,12 +67,7 @@ export class ProfileService {
     return { profile: await profile.toProfileJSONFor(isFollow) };
   }
 
-  async unfollow(authId: number, username: string) {
-    const user = await this.userRepository.findOneBy({ id: authId });
-    if (!user) {
-      throw new HttpException('Not authorized.', HttpStatus.UNAUTHORIZED);
-    }
-
+  async unfollow(auth: User, username: string) {
     const profile = await this.userRepository.findOneBy({ username: username });
     if (!profile) {
       throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
@@ -86,7 +76,7 @@ export class ProfileService {
     const follow = await this.followRepository.findOneBy({
       followId: profile.id,
       user: {
-        id: user.id
+        id: auth.id
       }
     });
 
