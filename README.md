@@ -36,6 +36,7 @@ $ npm install
 ```bash
 nest g resource user
 nest g resource profile
+nest g resource article
 ```
 
 ### dependencies
