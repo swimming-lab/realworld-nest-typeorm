@@ -10,64 +10,90 @@ export class ProfileService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Follow) private followRepository: Repository<Follow>) {}
 
-  async findProfile(id: number, username: string) {
+  async findProfile(authId: number, username: string) {
     const profile = await this.userRepository.findOneBy({ username: username });
     if (!profile) {
       throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
 
-    let toProfileJSONForUser: any;
-    if (id) {
-      const user = await this.userRepository.findOne({
-        relations: {
-          follows: true
-        },
-        where: {
-          id: id
+    let isFollow = false;
+    if (authId) {
+      // const user = await this.userRepository.findOne({
+      //   relations: {
+      //     follows: true
+      //   },
+      //   where: {
+      //     id: authId
+      //   }
+      // });
+
+      const follow = await this.followRepository.findOneBy({
+        followId: profile.id,
+        user: {
+          id: authId
         }
       });
 
-      if (user) {
-        toProfileJSONForUser = user;
-      } else {
-        toProfileJSONForUser = false;
+      if (follow) {
+        isFollow = true;
       }
-    } else {
-      toProfileJSONForUser = false;
     }
 
-    return { profile: await profile.toProfileJSONFor(toProfileJSONForUser) };
+    return { profile: await profile.toProfileJSONFor(isFollow) };
   }
 
-  async follow(id: number, username: string) {
+  async follow(authId: number, username: string) {
+    const user = await this.userRepository.findOneBy({ id: authId });
+    if (!user) {
+      throw new HttpException('Not authorized.', HttpStatus.UNAUTHORIZED);
+    }
+
     const profile = await this.userRepository.findOneBy({ username: username });
     if (!profile) {
       throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
 
-    const user = await this.userRepository.findOneBy({ id: id });
-    if (!user) {
-      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
-    }
-
-    const _follows = await this.followRepository.findOneBy({
+    const follow = await this.followRepository.findOneBy({
       followId: profile.id,
       user: {
         id: user.id
       }
     });
 
-    if (!_follows) {
+    let isFollow = false;
+    if (!follow) {
       const follow = new Follow();
       follow.followId = profile.id;
       follow.user = user;
       await this.followRepository.save(follow);
+      isFollow = true;
     }
 
-    return { profile: await profile.toProfileJSONFor(user) };
+    return { profile: await profile.toProfileJSONFor(isFollow) };
   }
 
-  async unfollow(id: number, username: string) {
-    return `This action removes a #${id} profile`;
+  async unfollow(authId: number, username: string) {
+    const user = await this.userRepository.findOneBy({ id: authId });
+    if (!user) {
+      throw new HttpException('Not authorized.', HttpStatus.UNAUTHORIZED);
+    }
+
+    const profile = await this.userRepository.findOneBy({ username: username });
+    if (!profile) {
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+
+    const follow = await this.followRepository.findOneBy({
+      followId: profile.id,
+      user: {
+        id: user.id
+      }
+    });
+
+    if (follow) {
+      await this.followRepository.delete(follow.id);
+    }
+
+    return { profile: await profile.toProfileJSONFor(false) };
   }
 }

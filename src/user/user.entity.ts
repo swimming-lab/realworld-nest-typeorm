@@ -79,18 +79,12 @@ export class User {
     };
   }
 
-	async toProfileJSONFor(user: User) {
+	async toProfileJSONFor(isFollow: boolean) {
 		return {
 			username: this.username,
 			bio: this.bio,
 			image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
-			following: user ? await user.hasFollow(this.id) : false
+			following: isFollow
 		};
-	};
-
-  async hasFollow(followId: number) {
-    if (this.follows.length > 0) {
-    }
-    return false;
-  }
+	}
 }

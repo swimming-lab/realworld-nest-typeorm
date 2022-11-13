@@ -16,7 +16,7 @@ export class ProfileController {
     return await this.profileService.follow(req['auth'].id, username);
   }
 
-  @Delete('/:username/unfollow')
+  @Delete('/:username/follow')
   async unfollow(@Req() req: Request, @Param('username') username: string) {
     return await this.profileService.unfollow(req['auth'].id, username);
   }
