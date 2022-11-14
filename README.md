@@ -43,6 +43,7 @@ nest g resource article
 ```bash
 $ npm install --save @nestjs/typeorm typeorm mysql2 
 $ npm install --save @nestjs/class-validator argon2 @types/jsonwebtoken
+$ npm install --save slug
 ```
 
 ## Running the app
