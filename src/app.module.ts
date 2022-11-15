@@ -14,7 +14,8 @@ import { ArticleModule } from './article/article.module';
       password: 'my-secret-pw',
       database: 'nestjs_realworld',
       entities: [__dirname + '/**/**.entity{.ts,.js}'],
-      synchronize: true,      
+      synchronize: true,
+      logging: ['query']
     }),
     UserModule,
     ProfileModule,
