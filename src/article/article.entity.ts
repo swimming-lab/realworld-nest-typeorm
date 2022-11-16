@@ -35,11 +35,15 @@ export class Article {
   updatedAt!: Date;
 
 	@BeforeInsert()
-  hashPassword() {
-    this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36)
+  setSlug() {
+    this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36).toLowerCase();
   }
 
 	async toJSONFor(user: User) {
+    const [author] = await Promise.all([
+      this.user.toProfileJSONFor(user)
+    ]);
+
 		return {
       slug: this.slug,
       title: this.title,
@@ -47,10 +51,10 @@ export class Article {
       body: this.body,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      // tagList: tags.map(tag => tag.name),
+      tagList: this.tags.map(tag => tag.name),
       // favorited,
       // favoritesCount,
-      // author,
+      author
     };
 	}
 }
