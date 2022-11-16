@@ -41,7 +41,7 @@ export class User {
   updatedAt: Date;
 
   @OneToMany(() => Follow, (follow) => follow.user)
-  follows: Follow[]
+  follows: Promise<Follow[]>
 
   @BeforeInsert()
   async hashPassword() {
@@ -79,12 +79,19 @@ export class User {
     };
   }
 
-	async toProfileJSONFor(isFollow: boolean) {
+	async toProfileJSONFor(follow: any) {
 		return {
 			username: this.username,
 			bio: this.bio,
 			image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
-			following: isFollow
+			following: typeof follow === 'boolean' ? follow : await follow.hasFollow(this.id)
 		};
 	}
+
+  async hasFollow(id: number) {
+    const follows = await this?.follows;
+    if (!follows) { return false; }
+
+    return follows.map(follow => follow.followId).includes(id);
+  }
 }
