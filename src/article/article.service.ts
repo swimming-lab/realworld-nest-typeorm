@@ -45,10 +45,21 @@ export class ArticleService {
   }
 
   async setArticleTags(createArticleDto: CreateArticleDto): Promise<Tag[]> {
-    const result = await this.tagRepository.upsert(
-      createArticleDto.tagList.map((tag) => { return new Tag(tag) }),
-      ["name"]
-    );
+    let tagList: Array<string>;
+    const findTags = await this.tagRepository.findBy({ name: In(createArticleDto.tagList) });
+    if (!findTags) {
+      tagList = findTags.map(tag => tag.name);
+    } else {
+      const tagNames = findTags.map(tag => tag.name);
+      tagList = createArticleDto.tagList.filter(name => !tagNames.includes(name));
+    }
+    await this.tagRepository.save(tagList.map((tag) => { return new Tag(tag) }));
+
+    // repository.upsert 왜 안되는지 못찾음...
+    // const result = await this.tagRepository.upsert(
+    //   createArticleDto.tagList.map((tag) => { return new Tag(tag) }),
+    //   ["name"]
+    // );
     return await this.tagRepository.findBy({ name: In(createArticleDto.tagList) });
   }
 }
