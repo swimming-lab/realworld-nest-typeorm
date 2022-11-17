@@ -22,11 +22,15 @@ export class Article {
 
 	@ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
-  user!: User
+  author!: User
 
 	@ManyToMany(() => Tag)
   @JoinTable({ name: 'article_tag' })
-  tags!: Tag[];
+  tags: Tag[];
+
+  @ManyToMany(() => User)
+  @JoinTable({ name: 'user_favorite_article' })
+  favorites: Promise<User[]>;
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -40,8 +44,10 @@ export class Article {
   }
 
 	async toJSONFor(user: User) {
-    const [author] = await Promise.all([
-      this.user.toProfileJSONFor(user)
+    const [favorited, favorites, author] = await Promise.all([
+      user ? await user.hasFavorite(this.id) : false,
+      await this.favorites,
+      this.author.toProfileJSONFor(user)
     ]);
 
 		return {
@@ -52,8 +58,8 @@ export class Article {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       tagList: this.tags.map(tag => tag.name),
-      // favorited,
-      // favoritesCount,
+      favorited,
+      favorites,
       author
     };
 	}

@@ -12,6 +12,16 @@ export class ArticleController {
     return this.articleService.create(req['auth'], createArticleDto);
   }
 
+  @Post('/:slug/favorite')
+  favorite(@Req() req: Request, @Param('slug') slug: string) {
+    return this.articleService.favorite(req['auth'], slug);
+  }
+
+  @Delete('/:slug/favorite')
+  unfavorite(@Req() req: Request, @Param('slug') slug: string) {
+    return this.articleService.unfavorite(req['auth'], slug);
+  }
+
   @Get()
   findAll() {
     return this.articleService.findAll();

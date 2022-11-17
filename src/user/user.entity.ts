@@ -6,12 +6,15 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { IsEmail } from '@nestjs/class-validator';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from '../config';
 import { Follow } from '../profile/follow.entity';
+import { Article } from '../article/article.entity';
 
 @Entity('users')
 export class User {
@@ -42,6 +45,10 @@ export class User {
 
   @OneToMany(() => Follow, (follow) => follow.user)
   follows: Promise<Follow[]>
+
+  @ManyToMany(() => Article)
+  @JoinTable({ name: 'user_favorite_article' })
+  favorites: Promise<Article[]>;
 
   @BeforeInsert()
   async hashPassword() {
@@ -92,6 +99,21 @@ export class User {
     const follows = await this?.follows;
     if (!follows) { return false; }
 
-    return follows.map(follow => follow.followId).includes(id);
+    return follows.findIndex(follow => follow.followId === id) > -1;
+  }
+
+  async hasFavorite(id: number) {
+    const favorites = await this?.favorites;
+    if (!favorites) { return false; }
+
+    return favorites.findIndex(article => article.id === id) > -1;
+  }
+
+  async removeFavorite(id: number) {
+    const favorites = await this?.favorites;
+    if (!favorites) { return false; }
+
+    const removeIndex = favorites.findIndex(article => article.id === id);
+    favorites.splice(removeIndex, 1);
   }
 }

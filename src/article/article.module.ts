@@ -18,7 +18,8 @@ export class ArticleModule implements NestModule {
       .apply(AuthMiddleware)
       .forRoutes(
         { path: 'articles', method: RequestMethod.POST },
-        { path: 'articles/:article', method: RequestMethod.ALL }
+        { path: 'articles/:slug', method: RequestMethod.ALL },
+        { path: 'articles/:slug/favorite', method: RequestMethod.ALL }
       );
   }
 }

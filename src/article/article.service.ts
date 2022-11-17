@@ -19,13 +19,38 @@ export class ArticleService {
     article.title = createArticleDto.title;
     article.description = createArticleDto.description;
     article.body = createArticleDto.body;
-    article.user = auth;
+    article.author = auth;
 
     const tags = await this.setArticleTags(createArticleDto);
     article.tags = tags;
 
     const savedArticle = await this.articleRepository.save(article);
     return { article: await savedArticle.toJSONFor(auth) };
+  }
+
+  async favorite(auth: User, slug: string) {
+    let article = await this.articleRepository.findOneBy({ slug: slug });
+    if (!article) { throw new HttpException('Article not found.', HttpStatus.NOT_FOUND); }
+
+    if (!await auth.hasFavorite(article.id)) {
+      (await article.favorites).push(auth);
+      article = await this.articleRepository.save(article);
+    }
+
+    return { article: await article.toJSONFor(auth) };
+  }
+
+  async unfavorite(auth: User, slug: string) {
+    let article = await this.articleRepository.findOneBy({ slug: slug });
+    if (!article) { throw new HttpException('Article not found.', HttpStatus.NOT_FOUND); }
+
+    if (await auth.hasFavorite(article.id)) {
+      auth.removeFavorite(article.id);
+      await this.userRepository.save(auth);
+      article = await this.articleRepository.findOneBy({ slug: slug });
+    }
+
+    return { article: await article.toJSONFor(auth) };
   }
 
   findAll() {
